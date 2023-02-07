@@ -36,6 +36,7 @@ OurTestScene::OurTestScene(
 	InitLightCameraBuffer();
 	InitMaterialBuffer();
 	// + init other CBuffers
+	InitSampler();
 }
 
 //
@@ -43,6 +44,7 @@ OurTestScene::OurTestScene(
 //
 void OurTestScene::Init()
 {
+	m_dxdevice_context->PSSetSamplers(0, 1, &m_sampler);
 	m_camera = new Camera(
 		45.0f * fTO_RAD,		// field-of-view (radians)
 		(float)m_window_width / m_window_height,	// aspect ratio
@@ -61,6 +63,7 @@ void OurTestScene::Init()
 	m_sphere = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 
 	m_sponza_transform = new Transform();
+	m_quad_transform = new Transform();
 	m_cube_parent_transform = new Transform();
 	m_cube_child_transform = new Transform(m_cube_parent_transform);
 	m_cube_child_child_transform = new Transform(m_cube_child_transform);
@@ -72,8 +75,12 @@ void OurTestScene::Init()
 	m_sponza_transform->SetRotation(fPI / 2, vec3f(0, 1, 0));					// Rotate pi/2 radians (90 degrees) around y
 	m_sponza_transform->SetScale(vec3f(0.05f, 0.05f, 0.05f));
 
+	m_quad_transform->SetPosition(vec3f(0, -1, 0));
+	m_quad_transform->SetRotation(fPI / 2, vec3f(-1, 0, 0));
+	m_quad_transform->SetScale(vec3f(15, 50, 1));
+
 	m_light_transform->SetPosition(vec3f(0, 1, 0));
-	m_light_transform->SetScale((0.2f, 0.2f, 0.2f));
+	m_light_transform->SetScale(vec3f(0.2f, 0.2f, 0.2f));
 
 	m_materials = materials::Materials();
 }
@@ -167,7 +174,6 @@ void OurTestScene::Update(
 	if (m_fps_cooldown < 0.0)
 	{
 		std::cout << "fps " << (int)(1.0f / dt) << std::endl;
-		std::cout << "light pos " << m_light_transform->GetPosition() << std::endl;
 		//		printf("fps %i\n", (int)(1.0f / dt));
 		m_fps_cooldown = 2.0;
 	}
@@ -185,8 +191,8 @@ void OurTestScene::Render()
 
 	//vec4f camPos = vec4f(m_camera->GetPosition(), 0);
 	vec4f camPos = m_camera->GetWorldSpacePosition();
-	//vec4f lightPos = vec4f(m_light_transform->GetPosition(), 0);
-	vec4f lightPos = m_light_transform->GetTransform() * vec4f(m_light_transform->GetPosition(),0);
+	vec4f lightPos = vec4f(m_light_transform->GetPosition(), 0);
+	//vec4f lightPos = m_light_transform->GetTransform() * vec4f(m_light_transform->GetPosition(),0);
 	UpdateLightCameraBuffer(lightPos, camPos);
 
 	// Obtain the matrices needed for rendering from the camera
@@ -194,14 +200,14 @@ void OurTestScene::Render()
 	m_projection_matrix = m_camera->ProjectionMatrix();
 
 	//Load matrices + the Quad's transformation to the device and render it
-   //UpdateTransformationBuffer(m_quad_transform, m_view_matrix, m_projection_matrix);
-   //m_quad->Render();
+	UpdateTransformationBuffer(m_quad_transform->GetTransform(), m_view_matrix, m_projection_matrix);
+	m_quad->Render();
 
 
 	//Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform->GetTransform(), m_view_matrix, m_projection_matrix);
 	UpdateMaterialBuffer(m_materials.Red);
-	m_sponza->Render();
+	//m_sponza->Render();
 
 	// Load matrices + Cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_parent_transform->GetTransform(), m_view_matrix, m_projection_matrix);
@@ -226,7 +232,7 @@ void OurTestScene::Render()
 
 void OurTestScene::Release()
 {
-	//SAFE_DELETE(m_quad);
+	SAFE_DELETE(m_quad);
 	SAFE_DELETE(m_sponza);
 	SAFE_DELETE(m_cube_parent);
 	SAFE_DELETE(m_cube_child);
@@ -244,6 +250,7 @@ void OurTestScene::Release()
 	SAFE_RELEASE(m_lightCam_buffer);
 	SAFE_RELEASE(m_material_buffer);
 	// + release other CBuffers
+	SAFE_RELEASE(m_sampler);
 }
 
 void OurTestScene::OnWindowResized(
@@ -350,4 +357,24 @@ void OurTestScene::UpdateMaterialBuffer(materials::Material material)
 	materialBuffer->Specular = material.Specular;
 	materialBuffer->Alpha = material.Alpha;
 	m_dxdevice_context->Unmap(m_material_buffer, 0);
+}
+
+void OurTestScene::InitSampler()
+{
+	HRESULT hr;
+	D3D11_SAMPLER_DESC samplerDesc =
+	{
+		//D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D11_FILTER_ANISOTROPIC,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_CLAMP,
+		0.0f,
+		4,
+		D3D11_COMPARISON_NEVER,
+		{1.0f, 1.0f, 1.0f, 1.0f},
+		-FLT_MAX,
+		FLT_MAX
+	};
+	ASSERT(hr = m_dxdevice->CreateSamplerState(&samplerDesc, &m_sampler));
 }

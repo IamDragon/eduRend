@@ -84,6 +84,9 @@ class OurTestScene : public Scene
 	ID3D11Buffer* m_material_buffer = nullptr;
 	// + other CBuffers
 
+	//Sampler
+	ID3D11SamplerState* m_sampler;
+
 	//
 	// Scene content
 	//
@@ -97,11 +100,12 @@ class OurTestScene : public Scene
 	Model* m_sphere;
 
 	//mat4f m_sponza_transform;
-	mat4f m_quad_transform;
+	//mat4f m_quad_transform;
 	//mat4f m_cube_parent_transform;
 	//mat4f m_cube_child_transform;
 
 	Transform* m_sponza_transform;
+	Transform* m_quad_transform;
 	Transform* m_cube_parent_transform;
 	Transform* m_cube_child_transform;
 	Transform* m_cube_child_child_transform;
@@ -129,7 +133,10 @@ class OurTestScene : public Scene
 	void InitMaterialBuffer();
 
 	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular, float alpha);
+
 	void UpdateMaterialBuffer(materials::Material material);
+
+	void InitSampler();
 
 public:
 	/**

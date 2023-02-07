@@ -3,6 +3,8 @@
 
 Texture2D texDiffuse : register(t0);
 
+SamplerState texSampler : register(s0);
+
 struct PSIn
 {
     float4 Pos : SV_Position;
@@ -32,19 +34,24 @@ cbuffer MaterialBuffer : register(b1)
 
 float4 PS_main(PSIn input) : SV_Target
 {
+    return texDiffuse.Sample(texSampler, input.TexCoord);
+    
     float4 Ia = Ambient;
 
     float4 L = float4(normalize(LightPos.xyz - input.WorldPos), 0);
     float4 Id = max(Diffuse * dot(L.xyz, input.Normal), 0);
 
-    float3 R = normalize(reflect(L.xyz, input.Normal));
+    float3 R = normalize(reflect(-L.xyz, input.Normal));
     float4 V = float4(normalize(CamPos.xyz - input.WorldPos), 0);
+    //float3 R = normalize(reflect(V.xyz, input.Normal));
 	
     float4 Is = max(Specular * pow(max(dot(V.xyz, R), 0), Alpha), 0);
+    //float4 Is = max(Specular * pow(abs(dot(V.xyz, R)), Alpha), 0);
 
     float4 I = Ia + Id + Is;
-    return I;
+    return I;   
 
+    
 	// Debug shading #1: map and return normal as a color, i.e. from [-1,1]->[0,1] per component
 	// The 4:th component is opacity and should be = 1
 	//return float4(input.Normal * 0.5 + 0.5, 1);
@@ -53,7 +60,7 @@ float4 PS_main(PSIn input) : SV_Target
 	//return float4(input.TexCoord, 0, 1);
 
 	//Blue
-	//return float4(0, 0, 1, 1);
+	//return float4(1, 0, 0, 1);
 
 }
 

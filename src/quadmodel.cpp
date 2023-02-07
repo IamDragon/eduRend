@@ -40,7 +40,7 @@ QuadModel::QuadModel(
 	indices.push_back(3);
 
 	// Vertex array descriptor
-	D3D11_BUFFER_DESC vertexbufferDesc { 0 };
+	D3D11_BUFFER_DESC vertexbufferDesc{ 0 };
 	vertexbufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexbufferDesc.CPUAccessFlags = 0;
 	vertexbufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -61,15 +61,37 @@ QuadModel::QuadModel(
 	indexbufferDesc.MiscFlags = 0;
 	indexbufferDesc.ByteWidth = (UINT)(indices.size() * sizeof(unsigned));
 	// Data resource
-	D3D11_SUBRESOURCE_DATA indexData { 0 };
+	D3D11_SUBRESOURCE_DATA indexData{ 0 };
 	indexData.pSysMem = &indices[0];
 	// Create index buffer on device using descriptor & data
 	dxdevice->CreateBuffer(&indexbufferDesc, &indexData, &m_index_buffer);
 	SETNAME(m_index_buffer, "IndexBuffer");
 
 	m_number_of_indices = (unsigned int)indices.size();
+
+	LoadTexture(dxdevice, dxdevice_context);
 }
 
+
+void QuadModel::LoadTexture(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context)
+{
+	HRESULT hr;
+	m_material.Name = "floor_diffuse";
+	m_material.DiffuseTextureFilename = "assets/textures/yroadcrossing.png";
+	std::cout << "Loading textures for quad" << std::endl;
+
+	if (m_material.DiffuseTextureFilename.size())
+	{
+
+		hr = LoadTextureFromFile(
+			dxdevice,
+			dxdevice_context,
+			m_material.DiffuseTextureFilename.c_str(),
+			&m_material.DiffuseTexture);
+		std::cout << "\t" << m_material.DiffuseTextureFilename
+			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+	}
+}
 
 void QuadModel::Render() const
 {
@@ -81,6 +103,14 @@ void QuadModel::Render() const
 	// Bind our index buffer
 	m_dxdevice_context->IASetIndexBuffer(m_index_buffer, DXGI_FORMAT_R32_UINT, 0);
 
+	//Set diffuse texture to PS slot t0
+	m_dxdevice_context->PSSetShaderResources(0, 1, &m_material.DiffuseTexture.TextureView);
+
 	// Make the drawcall
 	m_dxdevice_context->DrawIndexed(m_number_of_indices, 0, 0);
+}
+
+QuadModel::~QuadModel()
+{
+	SAFE_DELETE(m_material.DiffuseTexture.TextureView);
 }

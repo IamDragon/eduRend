@@ -14,6 +14,10 @@ class QuadModel : public Model
 {
 	unsigned m_number_of_indices = 0;
 
+	Material m_material;
+
+	void LoadTexture(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context);
+
 public:
 	/**
 	 * @brief Create a model of a quad.
@@ -30,5 +34,5 @@ public:
 	/**
 	 *@brief Destructor. 
 	*/
-	~QuadModel() { }
+	~QuadModel();
 };
