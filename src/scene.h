@@ -103,6 +103,8 @@ class OurTestScene : public Scene
 	//mat4f m_quad_transform;
 	//mat4f m_cube_parent_transform;
 	//mat4f m_cube_child_transform;
+	//mat4f m_cube_child_child_transform;
+	//mat4f m_light_transform;
 
 	Transform* m_sponza_transform;
 	Transform* m_quad_transform;

@@ -23,8 +23,10 @@ linalg::vec3f Transform::GetWorldPosition() const
 	return m_world_position;
 }
 
-void Transform::SetPosition(linalg::vec3f position) {
-	if (m_parent != nullptr) {
+void Transform::SetPosition(linalg::vec3f position)
+{
+	if (m_parent != nullptr)
+	{
 		m_position = position;
 		m_world_position = position + m_parent->GetPosition();
 	}
@@ -35,7 +37,7 @@ void Transform::SetPosition(linalg::vec3f position) {
 	}
 }
 
-void Transform::Move(linalg::vec3f direction) 
+void Transform::Move(linalg::vec3f direction)
 {
 	m_position += direction;
 	m_world_position += direction;
@@ -51,8 +53,10 @@ linalg::vec3f Transform::GetWorldPivotPosition() const
 	return m_world_pivot;
 }
 
-void Transform::SetPivotPosition(linalg::vec3f pivot_position) {
-	if (m_parent != nullptr) {
+void Transform::SetPivotPosition(linalg::vec3f pivot_position)
+{
+	if (m_parent != nullptr)
+	{
 		m_pivot = pivot_position;
 		m_world_pivot = pivot_position + m_parent->GetPivotPosition();
 	}
@@ -83,8 +87,10 @@ float Transform::GetWorldRotationAngle() const
 	return m_world_rotation_angle;
 }
 
-void Transform::SetRotation(linalg::vec3f rotation) {
-	if (m_parent != nullptr) {
+void Transform::SetRotation(linalg::vec3f rotation)
+{
+	if (m_parent != nullptr)
+	{
 		m_rotation = rotation;
 		m_world_rotation = rotation + m_parent->GetPosition();
 	}
@@ -94,12 +100,14 @@ void Transform::SetRotation(linalg::vec3f rotation) {
 		m_world_rotation = rotation;
 	}
 }
-void Transform::SetRotation( float rotation_angle, linalg::vec3f rotation) {
-	if (m_parent != nullptr) {
+void Transform::SetRotation(float rotation_angle, linalg::vec3f rotation)
+{
+	if (m_parent != nullptr)
+	{
 		m_rotation = rotation;
 		m_world_rotation = rotation + m_parent->GetRotation();
 		m_rotation_angle = rotation_angle;
-		m_world_rotation_angle = rotation_angle + m_parent->GetRotationAngle();
+		m_world_rotation_angle = rotation_angle;// +m_parent->GetRotationAngle();
 	}
 	else
 	{
@@ -109,10 +117,12 @@ void Transform::SetRotation( float rotation_angle, linalg::vec3f rotation) {
 		m_world_rotation_angle = rotation_angle;
 	}
 }
-void Transform::SetRotationAngle(float rotation_angle) {
-	if (m_parent != nullptr) {
+void Transform::SetRotationAngle(float rotation_angle)
+{
+	if (m_parent != nullptr)
+	{
 		m_rotation_angle = rotation_angle;
-		m_world_rotation_angle = rotation_angle + m_parent->GetRotationAngle();
+		m_world_rotation_angle = rotation_angle;// +m_parent->GetRotationAngle();
 	}
 	else
 	{
@@ -131,8 +141,10 @@ linalg::vec3f Transform::GetWorldScale() const
 	return m_world_scale;
 }
 
-void Transform::SetScale(linalg::vec3f scale) {
-	if (m_parent != nullptr) {
+void Transform::SetScale(linalg::vec3f scale)
+{
+	if (m_parent != nullptr)
+	{
 		m_scale = scale;
 		m_world_scale = scale + m_parent->GetScale();
 	}
@@ -159,6 +171,10 @@ void Transform::CalculateTransform()
 	mat4f local_transform = mat4f::translation(m_position) *
 		pivot_rotation_mat *
 		mat4f::scaling(m_scale);
+
+	//mat4f local_transform = mat4f::translation(m_position) *
+	//	mat4f::rotation(m_rotation_angle, m_rotation) *
+	//	mat4f::scaling(m_scale);
 
 	if (m_parent != nullptr)
 		m_transform = m_parent->GetTransform() * local_transform;

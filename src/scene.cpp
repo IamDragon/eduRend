@@ -112,7 +112,7 @@ void OurTestScene::Update(
 	long mousedx = input_handler.GetMouseDeltaX();
 	long mousedy = input_handler.GetMouseDeltaY();
 
-	if (input_handler.IsKeyPressed(Keys::Space))
+	//if (input_handler.IsKeyPressed(Keys::Space))
 	{
 		m_camera->Rotate({ 0, mousedx * dt , mousedy * dt });
 
@@ -151,6 +151,35 @@ void OurTestScene::Update(
 	//	mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
 	//	mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
 
+	//m_quad_transform = mat4f::translation(0, 0, 0) *			// No translation
+	//	mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
+	//	mat4f::scaling(1.5, 1.5, 1.5);
+
+	//m_sponza_transform->SetPosition(vec3f(0, -5, 0));					// Move down 5 units
+//m_sponza_transform->SetPivotPosition(vec3f(0, -5, 0));
+//m_sponza_transform->SetRotation(fPI / 2, vec3f(0, 1, 0));					// Rotate pi/2 radians (90 degrees) around y
+//m_sponza_transform->SetScale(vec3f(0.05f, 0.05f, 0.05f));
+
+
+	/*
+	m_sponza_transform = mat4f::translation(0, -5, 0) *
+		mat4f::rotation(fPI/2, 0.0f, 1.0f, 0.0f) *
+		mat4f::scaling(0.05f, 0.05f, 0.05f);
+
+	m_cube_parent_transform = mat4f::translation(0, 0, 0) *
+		mat4f::rotation(-m_angle, 1.0f, 0.0f, 0.0f) *
+		mat4f::scaling(1, 1, 1);
+
+	m_cube_child_transform = m_cube_parent_transform * (mat4f::translation(1, 0, 0) *
+		mat4f::rotation(0, 0.0f, 0.0f, 0.0f) *
+		mat4f::scaling(1, 1, 1));
+
+	m_cube_child_child_transform = m_cube_child_transform * (mat4f::translation(1, 0, 0) *
+		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *
+		mat4f::scaling(1, 1, 1));
+	*/
+
+
 	m_cube_parent_transform->SetPosition({ 0,0,0 });
 	m_cube_parent_transform->SetPivotPosition({ 0,0,0 });
 	m_cube_parent_transform->SetRotation(0, { 0,0,0 });
@@ -162,8 +191,8 @@ void OurTestScene::Update(
 	m_cube_child_transform->SetScale({ 0.75f,0.75f,0.75f });
 
 	m_cube_child_child_transform->SetPosition({ 1,1,0 });
-	m_cube_child_child_transform->SetPivotPosition(m_cube_child_transform->GetWorldPosition());
-	m_cube_child_child_transform->SetRotation(0, { 1,1,1 });
+	m_cube_child_child_transform->SetPivotPosition({ -1,-1,0 });
+	m_cube_child_child_transform->SetRotation(-m_angle, { 0,1,0 });
 	m_cube_child_child_transform->SetScale({ 0.5f,0.5f,0.5f });
 
 	// Increment the rotation angle.
@@ -365,9 +394,13 @@ void OurTestScene::InitSampler()
 	D3D11_SAMPLER_DESC samplerDesc =
 	{
 		//D3D11_FILTER_MIN_MAG_MIP_LINEAR,
-		D3D11_FILTER_ANISOTROPIC,
-		D3D11_TEXTURE_ADDRESS_WRAP,
-		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+		//D3D11_TEXTURE_ADDRESS_MIRROR,
+		//D3D11_TEXTURE_ADDRESS_MIRROR,
+		//D3D11_TEXTURE_ADDRESS_WRAP,
+		//D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_CLAMP,
+		D3D11_TEXTURE_ADDRESS_CLAMP,
 		D3D11_TEXTURE_ADDRESS_CLAMP,
 		0.0f,
 		4,
