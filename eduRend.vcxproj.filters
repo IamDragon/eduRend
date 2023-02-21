@@ -85,6 +85,9 @@
     <ClInclude Include="src\materials.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\CubeMapModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\inputhandler.cpp">
@@ -127,6 +130,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CubeMapModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

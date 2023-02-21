@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CubeMapModel.h" />
     <ClInclude Include="src\materials.h" />
     <ClInclude Include="src\cubemodel.h" />
     <ClInclude Include="lib\stb_image.h" />
@@ -180,10 +181,12 @@
     <ClInclude Include="src\Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CubeMapModel.cpp" />
     <ClCompile Include="src\cubemodel.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\inputhandler.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\objloader.cpp" />
     <ClCompile Include="src\objmodel.cpp" />
     <ClCompile Include="src\quadmodel.cpp" />

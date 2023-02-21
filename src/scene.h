@@ -86,6 +86,7 @@ class OurTestScene : public Scene
 
 	//Sampler
 	ID3D11SamplerState* m_sampler;
+	ID3D11SamplerState* m_cubemap_sampler;
 
 	//
 	// Scene content
@@ -98,6 +99,7 @@ class OurTestScene : public Scene
 	Model* m_cube_child; //Lucas cube
 	Model* m_cube_child_child; //Lucas cube
 	Model* m_sphere;
+	Model* m_cubemap;
 
 	//mat4f m_sponza_transform;
 	//mat4f m_quad_transform;
@@ -112,6 +114,7 @@ class OurTestScene : public Scene
 	Transform* m_cube_child_transform;
 	Transform* m_cube_child_child_transform;
 	Transform* m_light_transform;
+	Transform* m_cubemap_transform;
 
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;
@@ -134,11 +137,9 @@ class OurTestScene : public Scene
 
 	void InitMaterialBuffer();
 
-	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular, float alpha);
-
-	void UpdateMaterialBuffer(materials::Material material);
-
 	void InitSampler();
+
+	void InitCubeMapSampler();
 
 public:
 	/**

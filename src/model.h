@@ -15,6 +15,7 @@
 #include "Drawcall.h"
 #include "OBJLoader.h"
 #include "Texture.h"
+#include "materials.h"
 
 using namespace linalg;
 
@@ -32,6 +33,11 @@ protected:
 	ID3D11Buffer* m_vertex_buffer = nullptr; //!< Pointer to gpu side vertex buffer
 	ID3D11Buffer* m_index_buffer = nullptr; //!< Pointer to gpu side index buffer
 
+	ID3D11Buffer* m_material_buffer = nullptr; //!< Pointer to gpu side material buffer
+	Material m_material = DefaultMaterial;
+
+	void compute_TB(Vertex& v0, Vertex& v1, Vertex& v2);
+
 public:
 
 	/**
@@ -40,13 +46,22 @@ public:
 	 * @param dxdevice_context ID3D11DeviceContext to be used in the model.
 	*/
 	Model(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context)
-		: m_dxdevice(dxdevice), m_dxdevice_context(dxdevice_context) { }
+		: m_dxdevice(dxdevice), m_dxdevice_context(dxdevice_context)
+	{
+	}
+	Model(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* material_buffer)
+		: m_dxdevice(dxdevice), m_dxdevice_context(dxdevice_context), m_material_buffer(material_buffer)
+	{
+	}
 
 	/**
 	 * @brief Abstract render method: must be implemented by derived classes
 	*/
 	virtual void Render() const = 0;
-
+	virtual void UpdateMaterialBuffer() const;
+	void SetMaterial(materials::Material material);
+	void SetMaterial(Material* material);
+	void SetMaterial(vec4f ambient, vec4f diffuse, vec4f specular, float alpha);
 	/**
 	 * @brief Destructor.
 	 * @details Releases the vertex and index buffers of the Model.

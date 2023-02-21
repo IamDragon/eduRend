@@ -2,10 +2,10 @@
 
 CubeModel::CubeModel(
 	ID3D11Device* dxdevice,
-	ID3D11DeviceContext* dxdevice_context)
-	: Model(dxdevice, dxdevice_context)
+	ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* material_buffer)
+	: Model(dxdevice, dxdevice_context, material_buffer)
 {
-
+	m_material_buffer = material_buffer;
 	// Vertex and index arrays
 // Once their data is loaded to GPU buffers, they are not needed anymore
 	std::vector<Vertex> vertices;
@@ -44,10 +44,10 @@ CubeModel::CubeModel(
 	m_number_of_indices = (unsigned int)indices.size();
 }
 
-
-
 void CubeModel::Render() const
 {
+	UpdateMaterialBuffer();
+
 	// Bind our vertex buffer
 	const UINT32 stride = sizeof(Vertex); //  sizeof(float) * 8;
 	const UINT32 offset = 0;

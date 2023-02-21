@@ -4,6 +4,7 @@
 #include "OBJModel.h"
 #include "CubeModel.h"
 #include "Transform.h"
+#include "CubeMapModel.h"
 
 Scene::Scene(
 	ID3D11Device* dxdevice,
@@ -37,6 +38,7 @@ OurTestScene::OurTestScene(
 	InitMaterialBuffer();
 	// + init other CBuffers
 	InitSampler();
+	InitCubeMapSampler();
 }
 
 //
@@ -45,22 +47,37 @@ OurTestScene::OurTestScene(
 void OurTestScene::Init()
 {
 	m_dxdevice_context->PSSetSamplers(0, 1, &m_sampler);
+	m_dxdevice_context->PSSetSamplers(1, 1, &m_cubemap_sampler);
+
 	m_camera = new Camera(
 		45.0f * fTO_RAD,		// field-of-view (radians)
 		(float)m_window_width / m_window_height,	// aspect ratio
 		1.0f,					// z-near plane (everything closer will be clipped/removed)
 		500.0f);				// z-far plane (everything further will be clipped/removed)
 
+	m_materials = materials::Materials();
+
 	// Move camera to (0,0,5)
-	m_camera->MoveTo({ 0, 0, 5 });
+	m_camera->MoveTo({ 0, 0, -40 });
 
 	// Create objects
-	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
-	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
-	m_cube_parent = new CubeModel(m_dxdevice, m_dxdevice_context);
-	m_cube_child = new CubeModel(m_dxdevice, m_dxdevice_context);
-	m_cube_child_child = new CubeModel(m_dxdevice, m_dxdevice_context);
-	m_sphere = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context, m_material_buffer);
+	//m_cube_parent->SetMaterial(m_materials.Red);
+
+	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context, m_material_buffer);
+
+	m_cube_parent = new CubeModel(m_dxdevice, m_dxdevice_context, m_material_buffer);
+	//m_cube_parent->SetMaterial(m_materials.Red);
+
+	m_cube_child = new CubeModel(m_dxdevice, m_dxdevice_context, m_material_buffer);
+	//m_cube_parent->SetMaterial(m_materials.Green);
+
+	m_cube_child_child = new CubeModel(m_dxdevice, m_dxdevice_context, m_material_buffer);
+	//m_cube_parent->SetMaterial(m_materials.Yellow);
+
+	m_sphere = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_material_buffer);
+
+	m_cubemap = new CubeMapModel(m_dxdevice, m_dxdevice_context, m_material_buffer);
 
 	m_sponza_transform = new Transform();
 	m_quad_transform = new Transform();
@@ -68,6 +85,7 @@ void OurTestScene::Init()
 	m_cube_child_transform = new Transform(m_cube_parent_transform);
 	m_cube_child_child_transform = new Transform(m_cube_child_transform);
 	m_light_transform = new Transform();
+	m_cubemap_transform = new Transform();
 
 
 	m_sponza_transform->SetPosition(vec3f(0, -5, 0));					// Move down 5 units
@@ -79,10 +97,13 @@ void OurTestScene::Init()
 	m_quad_transform->SetRotation(fPI / 2, vec3f(-1, 0, 0));
 	m_quad_transform->SetScale(vec3f(15, 50, 1));
 
-	m_light_transform->SetPosition(vec3f(0, 1, 0));
+	m_light_transform->SetPosition(vec3f(0, 1, -45));
 	m_light_transform->SetScale(vec3f(0.2f, 0.2f, 0.2f));
 
-	m_materials = materials::Materials();
+	m_cubemap_transform->SetPosition(vec3f(0, 0, 0));
+	m_cubemap_transform->SetScale(vec3f(-300, -300, -300));
+	//m_cubemap_transform->SetScale(vec3f(20, 20, 20));
+
 }
 
 //
@@ -146,40 +167,6 @@ void OurTestScene::Update(
 	// If no transformation is desired, an identity matrix can be obtained 
 	// via e.g. Mquad = linalg::mat4f_identity; 
 
-	// Quad model-to-world transformation
-	//m_quad_transform = mat4f::translation(0, 0, 0) *			// No translation
-	//	mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
-	//	mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
-
-	//m_quad_transform = mat4f::translation(0, 0, 0) *			// No translation
-	//	mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
-	//	mat4f::scaling(1.5, 1.5, 1.5);
-
-	//m_sponza_transform->SetPosition(vec3f(0, -5, 0));					// Move down 5 units
-//m_sponza_transform->SetPivotPosition(vec3f(0, -5, 0));
-//m_sponza_transform->SetRotation(fPI / 2, vec3f(0, 1, 0));					// Rotate pi/2 radians (90 degrees) around y
-//m_sponza_transform->SetScale(vec3f(0.05f, 0.05f, 0.05f));
-
-
-	/*
-	m_sponza_transform = mat4f::translation(0, -5, 0) *
-		mat4f::rotation(fPI/2, 0.0f, 1.0f, 0.0f) *
-		mat4f::scaling(0.05f, 0.05f, 0.05f);
-
-	m_cube_parent_transform = mat4f::translation(0, 0, 0) *
-		mat4f::rotation(-m_angle, 1.0f, 0.0f, 0.0f) *
-		mat4f::scaling(1, 1, 1);
-
-	m_cube_child_transform = m_cube_parent_transform * (mat4f::translation(1, 0, 0) *
-		mat4f::rotation(0, 0.0f, 0.0f, 0.0f) *
-		mat4f::scaling(1, 1, 1));
-
-	m_cube_child_child_transform = m_cube_child_transform * (mat4f::translation(1, 0, 0) *
-		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *
-		mat4f::scaling(1, 1, 1));
-	*/
-
-
 	m_cube_parent_transform->SetPosition({ 0,0,0 });
 	m_cube_parent_transform->SetPivotPosition({ 0,0,0 });
 	m_cube_parent_transform->SetRotation(0, { 0,0,0 });
@@ -230,32 +217,29 @@ void OurTestScene::Render()
 
 	//Load matrices + the Quad's transformation to the device and render it
 	UpdateTransformationBuffer(m_quad_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	m_quad->Render();
-
+	//m_quad->Render();
 
 	//Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	UpdateMaterialBuffer(m_materials.Red);
 	//m_sponza->Render();
 
 	// Load matrices + Cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_parent_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	UpdateMaterialBuffer(m_materials.Green);
-	m_cube_parent->Render();
+	//m_cube_parent->Render();
 
 	// Load matrices + Cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_child_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	UpdateMaterialBuffer(m_materials.Blue);
-	m_cube_child->Render();
+	//m_cube_child->Render();
 
 	//Load matrices + Cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_child_child_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	UpdateMaterialBuffer(vec4f(255, 0, 255, 0), vec4f(1, 23, 52, 0), vec4f(1, 1, 1, 0), 75);
-	m_cube_child_child->Render();
+	//m_cube_child_child->Render();
 
-	UpdateMaterialBuffer(m_materials.Yellow);
 	UpdateTransformationBuffer(m_light_transform->GetTransform(), m_view_matrix, m_projection_matrix);
 	m_sphere->Render();
+
+	UpdateTransformationBuffer(m_cubemap_transform->GetTransform(), m_view_matrix, m_projection_matrix);
+	m_cubemap->Render();
 
 }
 
@@ -358,36 +342,6 @@ void OurTestScene::InitMaterialBuffer()
 	ASSERT(hr = m_dxdevice->CreateBuffer(&materialBufferDesc, nullptr, &m_material_buffer));
 }
 
-void OurTestScene::UpdateMaterialBuffer(
-	vec4f ambient,
-	vec4f diffuse,
-	vec4f specular,
-	float alpha)
-{
-	// Map the resource buffer, obtain a pointer and then write our matrices to it
-	D3D11_MAPPED_SUBRESOURCE resource;
-	m_dxdevice_context->Map(m_material_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-	MaterialBuffer* materialBuffer = (MaterialBuffer*)resource.pData;
-	materialBuffer->Ambient = ambient;
-	materialBuffer->Diffuse = diffuse;
-	materialBuffer->Specular = specular;
-	materialBuffer->Alpha = alpha;
-	m_dxdevice_context->Unmap(m_material_buffer, 0);
-}
-
-void OurTestScene::UpdateMaterialBuffer(materials::Material material)
-{
-	// Map the resource buffer, obtain a pointer and then write our matrices to it
-	D3D11_MAPPED_SUBRESOURCE resource;
-	m_dxdevice_context->Map(m_material_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-	MaterialBuffer* materialBuffer = (MaterialBuffer*)resource.pData;
-	materialBuffer->Ambient = material.Ambient;
-	materialBuffer->Diffuse = material.Diffuse;
-	materialBuffer->Specular = material.Specular;
-	materialBuffer->Alpha = material.Alpha;
-	m_dxdevice_context->Unmap(m_material_buffer, 0);
-}
-
 void OurTestScene::InitSampler()
 {
 	HRESULT hr;
@@ -397,17 +351,38 @@ void OurTestScene::InitSampler()
 		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
 		//D3D11_TEXTURE_ADDRESS_MIRROR,
 		//D3D11_TEXTURE_ADDRESS_MIRROR,
-		//D3D11_TEXTURE_ADDRESS_WRAP,
-		//D3D11_TEXTURE_ADDRESS_WRAP,
-		D3D11_TEXTURE_ADDRESS_CLAMP,
-		D3D11_TEXTURE_ADDRESS_CLAMP,
-		D3D11_TEXTURE_ADDRESS_CLAMP,
+		//D3D11_TEXTURE_ADDRESS_MIRROR,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		//D3D11_TEXTURE_ADDRESS_CLAMP,
+		//D3D11_TEXTURE_ADDRESS_CLAMP,
+		//D3D11_TEXTURE_ADDRESS_CLAMP,
 		0.0f,
-		4,
+		1,
 		D3D11_COMPARISON_NEVER,
 		{1.0f, 1.0f, 1.0f, 1.0f},
 		-FLT_MAX,
 		FLT_MAX
 	};
 	ASSERT(hr = m_dxdevice->CreateSamplerState(&samplerDesc, &m_sampler));
+}
+
+void OurTestScene::InitCubeMapSampler()
+{
+	HRESULT hr;
+	D3D11_SAMPLER_DESC samplerDesc =
+	{
+		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		0.0f,
+		1,
+		D3D11_COMPARISON_NEVER,
+		{1.0f, 1.0f, 1.0f, 1.0f},
+		-FLT_MAX,
+		FLT_MAX
+	};
+	ASSERT(hr = m_dxdevice->CreateSamplerState(&samplerDesc, &m_cubemap_sampler));
 }
