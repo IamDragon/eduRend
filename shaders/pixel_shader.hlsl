@@ -64,13 +64,18 @@ float4 PS_main(PSIn input) : SV_Target
     float4 Is = max(Specular * pow(max(dot(V.xyz, R), 0), Alpha), 0);
 
     //cubemap
-    float3 cubeReflection = reflect(V.xyz, N);
-    //float4 cubeMap = texCube.Sample(cubeSampler, cubeReflection);
-    float4 cubeMap = texCube.Sample(texSampler, -V.xyz);
-    return texCube.Sample(cubeSampler, V.xyz);
+    float3 cubeReflection = normalize(reflect(V.xyz, N));
+    float4 cubeMap = texCube.Sample(cubeSampler, cubeReflection);
+    //float4 cubeMap = texCube.Sample(texSampler, V.xyz);
     
-    Id = Id * cubeMap;
-    Is = Is * cubeMap;
+    //comment out to remove cubemap reflection
+    //Id = Id * cubeMap;
+    //Is = Is * cubeMap;
+    
+    //skybox
+    //return texCube.Sample(cubeSampler, V.xyz);
+    
+
     
     float4 I = Ia + Id + Is;
     //float4 I = Ia * cubeMap.x + Id * cubeMap.y + Is * cubeMap.z;

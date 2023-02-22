@@ -221,7 +221,7 @@ void OurTestScene::Render()
 
 	//Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform->GetTransform(), m_view_matrix, m_projection_matrix);
-	//m_sponza->Render();
+	m_sponza->Render();
 
 	// Load matrices + Cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_parent_transform->GetTransform(), m_view_matrix, m_projection_matrix);
